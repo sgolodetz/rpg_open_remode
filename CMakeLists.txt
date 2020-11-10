@@ -17,12 +17,26 @@
 
 SET(PROJECT_NAME rpg_open_remode)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.3)
+
+# BEGIN SMG
+# Make it possible to set the VC runtime library from CMake.
+IF(POLICY CMP0091)
+  CMAKE_POLICY(SET CMP0091 NEW)
+ENDIF()
+# END SMG
+
 PROJECT(${PROJECT_NAME})
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/CMakeModules/")
 SET(CMAKE_BUILD_TYPE Release) # Release, RelWithDebInfo
 
 find_package(CUDA REQUIRED)
 SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-O3 -use_fast_math)
+
+# BEGIN SMG
+IF(MSVC_IDE)
+  SET(CUDA_NVCC_FLAGS_DEBUG "-D_DEBUG")
+ENDIF()
+# END SMG
 
 # Specify compute capability
 #list(APPEND CUDA_NVCC_FLAGS -arch=sm_30)
@@ -51,6 +65,16 @@ endif(BUILD_TESTS)
 ADD_DEFINITIONS(-DRMD_CORR_PATCH_SIDE=5)
 # Maximum extent of epipolar line search in pixels
 ADD_DEFINITIONS(-DRMD_MAX_EXTENT_EPIPOLAR_SEARCH=100)
+
+# BEGIN SMG
+IF(MSVC_IDE)
+  # Make sure that the maths constants are defined.
+  ADD_DEFINITIONS(-D_USE_MATH_DEFINES)
+
+  # Disable auto-linking of Boost libraries on Windows.
+  ADD_DEFINITIONS(-DBOOST_ALL_NO_LIB)
+ENDIF()
+# END SMG
 
 find_package(OpenCV REQUIRED)
 find_package(Eigen REQUIRED)
@@ -111,6 +135,12 @@ ADD_LIBRARY(
     ${SOURCE_FILES}
 )
 
+# BEGIN SMG
+IF(MSVC_IDE)
+  SET_PROPERTY(TARGET rpg_open_remode PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+ENDIF()
+# END SMG
+
 target_link_libraries(
     rpg_open_remode
     ${LINK_LIBS}
@@ -147,6 +177,12 @@ add_executable(
     test/dataset_main.cpp
     test/dataset.cpp
 )
+
+# BEGIN SMG
+IF(MSVC_IDE)
+  SET_PROPERTY(TARGET dataset_main PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+ENDIF()
+# END SMG
 
 target_link_libraries(
     dataset_main
