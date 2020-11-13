@@ -34,7 +34,8 @@ SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-O3 -use_fast_math)
 
 # BEGIN SMG
 IF(MSVC_IDE)
-  SET(CUDA_NVCC_FLAGS_DEBUG "-D_DEBUG")
+  SET(CUDA_NVCC_FLAGS_DEBUG "-D_DEBUG -Xcompiler /MDd")
+  SET(CUDA_NVCC_FLAGS_RELEASE "-Xcompiler /MD")
 ENDIF()
 # END SMG
 
@@ -135,12 +136,6 @@ ADD_LIBRARY(
     ${SOURCE_FILES}
 )
 
-# BEGIN SMG
-IF(MSVC_IDE)
-  SET_PROPERTY(TARGET rpg_open_remode PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-ENDIF()
-# END SMG
-
 target_link_libraries(
     rpg_open_remode
     ${LINK_LIBS}
@@ -177,12 +172,6 @@ add_executable(
     test/dataset_main.cpp
     test/dataset.cpp
 )
-
-# BEGIN SMG
-IF(MSVC_IDE)
-  SET_PROPERTY(TARGET dataset_main PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-ENDIF()
-# END SMG
 
 target_link_libraries(
     dataset_main
