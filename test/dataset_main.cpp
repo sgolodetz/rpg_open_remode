@@ -75,6 +75,8 @@ int main(int argc, char **argv)
     }
     double min_depth, max_depth;
     cv::minMaxLoc(depth_32FC1, &min_depth, &max_depth);
+    /*min_depth = 0.1;
+    max_depth = 4;*/
 
     rmd::SE3<float> T_world_curr;
     dataset.readCameraPose(T_world_curr, data);
@@ -104,19 +106,23 @@ int main(int argc, char **argv)
       printf("\nUPDATE execution time: %f seconds.\n", t);
       update_time.push_back(t);
     }
+
+    cv::imshow("image", img);
+
+    // show depthmap
+    depthmap.downloadDepthmap();
+    cv::Mat result = depthmap.getDepthmap();
+    cv::Mat colored = rmd::Depthmap::scaleMat(result);
+    cv::imshow("result", colored);
+
+    // denoise
+    depthmap.downloadDenoisedDepthmap(0.5f, 200);
+    cv::Mat denoised_result = depthmap.getDepthmap();
+    cv::Mat colored_denoised = rmd::Depthmap::scaleMat(denoised_result);
+    cv::imshow("denoised_result", colored_denoised);
+
+    cv::waitKey(1);
   }
-
-  // show depthmap
-  depthmap.downloadDepthmap();
-  cv::Mat result = depthmap.getDepthmap();
-  cv::Mat colored = rmd::Depthmap::scaleMat(result);
-  cv::imshow("result", colored);
-
-  // denoise
-  depthmap.downloadDenoisedDepthmap(0.5f, 200);
-  cv::Mat denoised_result = depthmap.getDepthmap();
-  cv::Mat colored_denoised = rmd::Depthmap::scaleMat(denoised_result);
-  cv::imshow("denoised_result", colored_denoised);
 
   cv::waitKey();
 
